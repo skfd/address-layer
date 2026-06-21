@@ -42,6 +42,7 @@ class Config:
     license_url: str = ""
     attribution: str = ""
     changes_url: str = ""                 # optional sibling change-tracker site
+    head_extra: str = ""                  # raw HTML injected before </head> (e.g. analytics)
     layer_name: str = "addresses"
     wsl_distro: str = "Ubuntu"
     vector_minzoom: int = 12
@@ -147,6 +148,7 @@ def load(path="layer.toml", project_dir=None):
         license_url=layer.get("license_url", ""),
         attribution=layer.get("attribution", ""),
         changes_url=layer.get("changes_url", ""),
+        head_extra=layer.get("head_extra", ""),
         layer_name=layer.get("layer_name", "addresses"),
         wsl_distro=layer.get("wsl_distro", "Ubuntu"),
         vector_minzoom=layer.get("vector_minzoom", 12),

@@ -59,6 +59,7 @@ def build_site(cfg):
         "{{ID_FIGURE}}": _figure(cfg, "iD.png"),
         "{{JOSM_FIGURE}}": _figure(cfg, "JOSM.png"),
         "{{FOOTER_EXTRA}}": _footer_extra(cfg),
+        "{{HEAD_EXTRA}}": cfg.head_extra,
     }
     for key, value in replacements.items():
         html = html.replace(key, value)
