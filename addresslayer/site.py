@@ -38,6 +38,7 @@ def build_site(cfg):
     replacements = {
         "{{TITLE}}": cfg.title_or_default,
         "{{PROVIDER}}": cfg.provider,
+        "{{ATTRIBUTION}}": cfg.attribution,
         "{{POINT_COUNT}}": point_count,
         "{{BUILD_DATE}}": build_date,
         "{{DATA_DATE}}": _data_date(cfg, build_date),

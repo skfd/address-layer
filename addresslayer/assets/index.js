@@ -37,6 +37,7 @@
       minZoom: rasterMin,
       maxNativeZoom: rasterMax,
       maxZoom: rasterMax,
+      attribution: el.dataset.attribution || "",
     }).addTo(map);
   }
 
