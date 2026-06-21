@@ -1,6 +1,6 @@
 """Unit tests for the Web Mercator tile math (city-agnostic)."""
 
-from addresslayer.tilemath import (
+from addresslayerist.tilemath import (
     TILE_SIZE,
     lonlat_to_pixel,
     lonlat_to_tile,

@@ -117,7 +117,7 @@ def load(path="layer.toml", project_dir=None):
     if not os.path.isfile(cfg_path):
         raise SystemExit(
             f"No config file: {cfg_path}. Run from a city repo containing a "
-            f"layer.toml (see 'addresslayer onboard')."
+            f"layer.toml (see 'addresslayerist onboard')."
         )
     with open(cfg_path, "rb") as f:
         raw = tomllib.load(f)

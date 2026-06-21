@@ -1,4 +1,4 @@
-// Address-layer landing page: preview map + copy buttons.
+// Address-layerist landing page: preview map + copy buttons.
 // City-specific values (centre, zoom range, raster URL) come from data-*
 // attributes on #preview-map, written by the site template.
 

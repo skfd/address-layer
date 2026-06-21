@@ -1,4 +1,4 @@
-# address-layer
+# address-layerist
 
 A reusable engine that turns any municipal **address-point** dataset into map
 tiles for OpenStreetMap editors:
@@ -34,19 +34,19 @@ can be lifted from that registry.
 ```
 oakville-address-layer/
   layer.toml            # the one per-city config (see the skill)
-  run.py                # from addresslayer.cli import main; main()
-  requirements.txt      # -e ../address-layer
+  run.py                # from addresslayerist.cli import main; main()
+  requirements.txt      # -e ../address-layerist
   assets/               # optional overrides + iD.png / JOSM.png
 ```
 
 ```
-pip install -e ../address-layer      # once (add [shapefile] for shapefile sources)
+pip install -e ../address-layerist      # once (add [shapefile] for shapefile sources)
 python run.py build                  # fetch + slim + vector + raster + site
 python run.py update                 # build + publish (daily entry point)
 ```
 
 Individual steps: `fetch slim vector raster site publish`. Run
-`addresslayer onboard` for onboarding guidance.
+`addresslayerist onboard` for onboarding guidance.
 
 ## Key locked-in rules
 

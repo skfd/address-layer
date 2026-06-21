@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "address-layer"
+name = "address-layerist"
 version = "0.1.0"
 description = "Build OSM reference address tile layers (vector MVT + labelled raster PNG) from any municipal address-point dataset."
 requires-python = ">=3.11"
@@ -14,10 +14,10 @@ dependencies = ["requests", "Pillow", "ijson"]
 shapefile = ["pyshp", "pyproj"]
 
 [project.scripts]
-addresslayer = "addresslayer.cli:main"
+addresslayerist = "addresslayerist.cli:main"
 
 [tool.setuptools]
-packages = ["addresslayer", "addresslayer.fetch"]
+packages = ["addresslayerist", "addresslayerist.fetch"]
 
 [tool.setuptools.package-data]
-addresslayer = ["assets/*.tmpl", "assets/*.css", "assets/*.js", "assets/font/*.ttf"]
+addresslayerist = ["assets/*.tmpl", "assets/*.css", "assets/*.js", "assets/font/*.ttf"]

@@ -1,6 +1,6 @@
 # WSL2 + tippecanoe setup (one time)
 
-The vector tile step (`addresslayer vector`) builds Mapbox Vector Tiles with
+The vector tile step (`addresslayerist vector`) builds Mapbox Vector Tiles with
 **tippecanoe**, which has no native Windows build. It runs inside WSL2 / Ubuntu.
 This is a one-time setup; after it, every build drives WSL automatically.
 

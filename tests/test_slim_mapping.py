@@ -7,7 +7,7 @@ pin that contract.
 
 from types import SimpleNamespace
 
-from addresslayer.slim import _property_map
+from addresslayerist.slim import _property_map
 
 
 def _cfg(fields, mvt_extra=None):

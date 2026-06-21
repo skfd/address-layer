@@ -1,14 +1,14 @@
-"""CLI for the address-layer engine. Run from a city repo that has a layer.toml.
+"""CLI for the address-layerist engine. Run from a city repo that has a layer.toml.
 
-    addresslayer fetch     # fetch latest address GeoJSON (arcgis or static)
-    addresslayer slim      # stream it into a slim GeoJSONL + meta
-    addresslayer vector    # build vector (MVT) tiles via WSL tippecanoe
-    addresslayer raster    # build labelled raster (PNG) tiles
-    addresslayer site      # render the landing page
-    addresslayer publish   # force-push build/site to gh-pages
-    addresslayer build     # fetch + slim + vector + raster + site
-    addresslayer update    # build + publish (the daily entry point)
-    addresslayer onboard   # how to add a new city (prints guidance)
+    addresslayerist fetch     # fetch latest address GeoJSON (arcgis or static)
+    addresslayerist slim      # stream it into a slim GeoJSONL + meta
+    addresslayerist vector    # build vector (MVT) tiles via WSL tippecanoe
+    addresslayerist raster    # build labelled raster (PNG) tiles
+    addresslayerist site      # render the landing page
+    addresslayerist publish   # force-push build/site to gh-pages
+    addresslayerist build     # fetch + slim + vector + raster + site
+    addresslayerist update    # build + publish (the daily entry point)
+    addresslayerist onboard   # how to add a new city (prints guidance)
 """
 
 import argparse
@@ -16,13 +16,13 @@ import os
 import re
 import sys
 
-from addresslayer import config as _config
-from addresslayer.fetch import fetch as _fetch
-from addresslayer.slim import slim as _slim
-from addresslayer.vector import build_vector
-from addresslayer.raster import build_raster
-from addresslayer.site import build_site
-from addresslayer.publish import publish as _publish
+from addresslayerist import config as _config
+from addresslayerist.fetch import fetch as _fetch
+from addresslayerist.slim import slim as _slim
+from addresslayerist.vector import build_vector
+from addresslayerist.raster import build_raster
+from addresslayerist.site import build_site
+from addresslayerist.publish import publish as _publish
 
 
 def _banner(text):
@@ -104,7 +104,7 @@ COMMANDS = {
 ONBOARD_HELP = """\
 Onboarding a new city is a Claude Code task, not a script. See the skill:
 
-  skills/onboard-city/SKILL.md   (in the address-layer engine repo)
+  skills/onboard-city/SKILL.md   (in the address-layerist engine repo)
 
 It walks through: find the data source (reuse
 ontario-address-changes/datasets/<slug>.toml if it exists), map which source
@@ -116,7 +116,7 @@ screenshots.
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="addresslayer", description="Address tile-layer builder"
+        prog="addresslayerist", description="Address tile-layer builder"
     )
     sub = parser.add_subparsers(dest="command")
     sub.add_parser("onboard", help="How to onboard a new city (prints guidance)")

@@ -5,7 +5,7 @@ description: Onboard a new municipality into an address tile layer. Use when ask
 
 # Onboard a city into an address layer
 
-This is the **fuzzy** half of address-layer: the judgement work that turns a
+This is the **fuzzy** half of address-layerist: the judgement work that turns a
 municipality into a `layer.toml`. The engine (fetch/slim/vector/raster/site/
 publish) is locked and deterministic; everything below is what only a human or
 Claude can decide. The `layer.toml` you produce is the contract between them.
@@ -26,7 +26,7 @@ redistribution).
    - an **ArcGIS REST** FeatureServer/MapServer layer (`access = "arcgis"`),
    - a static **GeoJSON** download (`access = "static"`, `format = "geojson"`),
    - a **shapefile** export (`access = "static"`, `format = "shapefile"`; pulls
-     in the `shapefile` extra: `pip install address-layer[shapefile]`).
+     in the `shapefile` extra: `pip install address-layerist[shapefile]`).
    For an ArcGIS layer, the `data_url` is the layer endpoint (no `/query`), e.g.
    `https://.../MapServer/15`. Probe `"<data_url>?f=json"` to confirm it is a
    point layer and read its field list.
@@ -93,8 +93,8 @@ Confirm `github_repo`/`pages_url` (the account) with the user if unknown.
 ## 5. Scaffold the city repo
 
 A city repo is thin. Alongside `layer.toml`:
-- `run.py` -> `from addresslayer.cli import main; main()`
-- `requirements.txt` -> `-e ../address-layer` (or the git URL of the engine)
+- `run.py` -> `from addresslayerist.cli import main; main()`
+- `requirements.txt` -> `-e ../address-layerist` (or the git URL of the engine)
 - `.gitignore` -> `data/`, `build/`, `logs/`, `__pycache__/`
 - optional `assets/` for overrides + `iD.png`/`JOSM.png` screenshots
 - optional `schedule-add.ps1` / `schedule-remove.ps1` for a daily task
@@ -102,7 +102,7 @@ A city repo is thin. Alongside `layer.toml`:
 ## 6. Build, verify, screenshot
 
 ```
-pip install -e ../address-layer      # once
+pip install -e ../address-layerist      # once
 python run.py build                  # fetch + slim + vector + raster + site
 ```
 
