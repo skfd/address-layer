@@ -8,7 +8,13 @@
     addresslayerist publish   # force-push build/site to gh-pages
     addresslayerist build     # fetch + slim + vector + raster + site
     addresslayerist update    # build + publish (the daily entry point)
+    addresslayerist cache ls|restore <slug> [date]   # shared-cache archive
     addresslayerist onboard   # how to add a new city (prints guidance)
+
+Set ADDRESSLAYERIST_CACHE to a shared folder to dedupe downloads across sibling
+city repos (and the ontario-address-changes tracker): the first job per source
+per day downloads, the rest reuse it. Snapshots older than 2 days are then moved
+into a restic archive (kept forever, restorable via 'cache restore').
 """
 
 import argparse
@@ -16,6 +22,7 @@ import os
 import re
 import sys
 
+from addresslayerist import cache as _cache
 from addresslayerist import config as _config
 from addresslayerist.fetch import fetch as _fetch
 from addresslayerist.slim import slim as _slim
@@ -30,22 +37,23 @@ def _banner(text):
 
 
 def _latest_geojson(cfg):
-    if not os.path.isdir(cfg.data_dir):
-        raise SystemExit("No data/ directory. Run 'fetch' first.")
+    if not os.path.isdir(cfg.download_dir):
+        raise SystemExit("No download dir. Run 'fetch' first.")
     files = sorted(
-        f for f in os.listdir(cfg.data_dir)
+        f for f in os.listdir(cfg.download_dir)
         if f.startswith(f"{cfg.slug}-") and f.endswith(".geojson")
         and re.search(r"\d{4}-\d{2}-\d{2}", f)
     )
     if not files:
-        raise SystemExit("No address GeoJSON in data/. Run 'fetch' first.")
-    return os.path.join(cfg.data_dir, files[-1])
+        raise SystemExit("No address GeoJSON in download dir. Run 'fetch' first.")
+    return os.path.join(cfg.download_dir, files[-1])
 
 
 def cmd_fetch(cfg, args):
     _banner("Fetch")
     path, count = _fetch(cfg, force=args.force)
     print(f"  {count:,} features -> {path}")
+    _cache.sweep(cfg.download_dir)  # archive snapshots >2 days old (shared cache only)
 
 
 def cmd_slim(cfg, args):
@@ -90,6 +98,21 @@ def cmd_update(cfg, args):
     cmd_publish(cfg, args)
 
 
+def cmd_cache(cfg, args):
+    _banner("Cache")
+    if args.action == "ls":
+        dates = _cache.list_archived(cfg.download_dir, args.slug)
+        if not dates:
+            print(f"  no archived snapshots for {args.slug}")
+        for d in dates:
+            print(f"  {args.slug} {d}")
+    else:  # restore
+        if not args.date:
+            raise SystemExit("restore needs a date: cache restore <slug> <YYYY-MM-DD>")
+        path = _cache.restore(cfg.download_dir, args.slug, args.date)
+        print(f"  restored -> {path}")
+
+
 COMMANDS = {
     "fetch": (cmd_fetch, "Fetch the latest address GeoJSON (arcgis or static)"),
     "slim": (cmd_slim, "Stream it into a slim GeoJSONL + meta"),
@@ -132,6 +155,13 @@ def main():
                 help="Re-fetch even if the remote is unchanged",
             )
 
+    pc = sub.add_parser("cache", help="Inspect/restore the shared download archive")
+    pc.add_argument("-c", "--config", default="layer.toml",
+                    help="Path to the city config (default: layer.toml)")
+    pc.add_argument("action", choices=["ls", "restore"], help="ls or restore")
+    pc.add_argument("slug", help="City slug (the shared cache holds many)")
+    pc.add_argument("date", nargs="?", help="YYYY-MM-DD (required for restore)")
+
     args = parser.parse_args()
     if args.command is None:
         parser.print_help()
@@ -143,6 +173,9 @@ def main():
         args.force = False
 
     cfg = _config.load(getattr(args, "config", "layer.toml"))
+    if args.command == "cache":
+        cmd_cache(cfg, args)
+        return
     COMMANDS[args.command][0](cfg, args)
 
 

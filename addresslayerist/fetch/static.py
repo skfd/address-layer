@@ -60,6 +60,9 @@ def _load_sidecar(cfg):
 
 
 def _save_sidecar(cfg, headers, filename):
+    # The sidecar lives per-repo (data_dir), which may not exist yet when the
+    # download itself went to a separate shared cache (download_dir).
+    os.makedirs(os.path.dirname(cfg.last_download_path), exist_ok=True)
     with open(cfg.last_download_path, "w", encoding="utf-8") as f:
         json.dump({**headers, "filename": filename}, f, indent=2)
 
@@ -73,7 +76,7 @@ def _cached_if_unchanged(cfg):
         return None
     same = (remote.get("last_modified") == sc.get("last_modified")
             and remote.get("content_length") == sc.get("content_length"))
-    path = os.path.join(cfg.data_dir, sc.get("filename", ""))
+    path = os.path.join(cfg.download_dir, sc.get("filename", ""))
     return path if same and os.path.isfile(path) else None
 
 
@@ -128,17 +131,23 @@ def _locate(work_dir, pattern):
 
 
 def fetch(cfg, force=False):
-    os.makedirs(cfg.data_dir, exist_ok=True)
+    os.makedirs(cfg.download_dir, exist_ok=True)
+    filename = f"{cfg.slug}-{date.today().isoformat()}.geojson"
+    filepath = os.path.join(cfg.download_dir, filename)
+
+    # Today's file already in the (possibly shared) cache: reuse without even a
+    # HEAD, so a sibling repo that already pulled this source today costs nothing.
+    if os.path.exists(filepath) and not force:
+        print(f"  using cached {filename}")
+        return filepath, _count_features(filepath)
+
     if not force:
         cached = _cached_if_unchanged(cfg)
         if cached:
             print(f"  using cached {os.path.basename(cached)} (remote unchanged)")
             return cached, _count_features(cached)
 
-    filename = f"{cfg.slug}-{date.today().isoformat()}.geojson"
-    filepath = os.path.join(cfg.data_dir, filename)
-
-    work = os.path.join(cfg.data_dir, "_download")
+    work = os.path.join(cfg.download_dir, "_download")
     os.makedirs(work, exist_ok=True)
     raw = os.path.join(work, "download.bin")
     print(f"  downloading {cfg.data_url}")
@@ -152,8 +161,10 @@ def fetch(cfg, force=False):
         shp = _locate(work, "*.shp")
         print(f"  reading shapefile {os.path.basename(shp)}")
         features = _read_shapefile(shp)  # reprojected to WGS84 in memory
-        with open(filepath, "w", encoding="utf-8") as f:
+        tmp = filepath + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump({"type": "FeatureCollection", "features": features}, f)
+        os.replace(tmp, filepath)  # atomic: shared-cache readers never see a partial file
         count = len(features)
     else:  # geojson -- already WGS84; move it into place without parsing whole
         if is_zip:
