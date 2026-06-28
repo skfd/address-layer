@@ -60,14 +60,6 @@ class Config:
         return os.path.join(self.project_dir, "data")
 
     @property
-    def download_dir(self):
-        """Where raw ``<slug>-DATE.geojson`` downloads live. Defaults to data_dir;
-        point ADDRESSLAYERIST_CACHE at a shared folder so sibling city repos (and
-        the ontario-address-changes tracker) reuse one download per source per day
-        instead of each pulling the same data."""
-        return os.environ.get("ADDRESSLAYERIST_CACHE") or self.data_dir
-
-    @property
     def build_dir(self):
         return os.path.join(self.project_dir, "build")
 
@@ -94,10 +86,6 @@ class Config:
     @property
     def meta_path(self):
         return os.path.join(self.data_dir, f"{self.slug}-meta.json")
-
-    @property
-    def last_download_path(self):
-        return os.path.join(self.data_dir, ".last-download.json")
 
     @property
     def vector_tile_dir(self):

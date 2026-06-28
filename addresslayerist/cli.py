@@ -8,23 +8,17 @@
     addresslayerist publish   # force-push build/site to gh-pages
     addresslayerist build     # fetch + slim + vector + raster + site
     addresslayerist update    # build + publish (the daily entry point)
-    addresslayerist cache ls|restore <slug> [date]   # shared-cache archive
     addresslayerist onboard   # how to add a new city (prints guidance)
 
-Set ADDRESSLAYERIST_CACHE to a shared folder to dedupe downloads across sibling
-city repos (and the ontario-address-changes tracker): the first job per source
-per day downloads, the rest reuse it. Snapshots older than 2 days are then moved
-into a restic archive (kept forever, restorable via 'cache restore').
+Raw address data is fetched from and stored in address-vault (the central tiered
+store), not pulled here. Set ADDRESSVAULT_DIR to the vault folder: 'fetch' pulls
+the latest dump into the vault, the build steps read it back. Inspect or restore
+archived days with the 'addressvault' CLI.
 """
 
 import argparse
-import os
-import re
-import sys
 
-from addresslayerist import cache as _cache
 from addresslayerist import config as _config
-from addresslayerist.fetch import fetch as _fetch
 from addresslayerist.slim import slim as _slim
 from addresslayerist.vector import build_vector
 from addresslayerist.raster import build_raster
@@ -36,24 +30,38 @@ def _banner(text):
     print(f"\n=== {text} ===")
 
 
+def _vault(cfg):
+    """A Vault handle with this city's source registered from its layer.toml.
+
+    The data-source keys are byte-compatible, so the engine seeds the vault from
+    the same layer.toml it already loads -- no separate registration step."""
+    from addressvault import Source, Vault
+    v = Vault()  # uses ADDRESSVAULT_DIR
+    v.add_source(Source(
+        slug=cfg.slug, provider=cfg.provider, data_url=cfg.data_url,
+        access=cfg.access, format=cfg.format, source_crs=cfg.source_crs,
+        fields=cfg.fields, license_name=cfg.license_name,
+    ))
+    return v
+
+
 def _latest_geojson(cfg):
-    if not os.path.isdir(cfg.download_dir):
-        raise SystemExit("No download dir. Run 'fetch' first.")
-    files = sorted(
-        f for f in os.listdir(cfg.download_dir)
-        if f.startswith(f"{cfg.slug}-") and f.endswith(".geojson")
-        and re.search(r"\d{4}-\d{2}-\d{2}", f)
-    )
-    if not files:
-        raise SystemExit("No address GeoJSON in download dir. Run 'fetch' first.")
-    return os.path.join(cfg.download_dir, files[-1])
+    """Hot path to the latest vault snapshot, thawing it if it has gone cold."""
+    from addressvault import Archived
+    v = _vault(cfg)
+    try:
+        return v.path(cfg.slug, "latest")
+    except Archived:
+        v.thaw(cfg.slug, v.snapshot(cfg.slug, "latest").date)
+        return v.path(cfg.slug, "latest")
+    except LookupError:
+        raise SystemExit(f"No vault data for {cfg.slug}. Run 'fetch' first.")
 
 
 def cmd_fetch(cfg, args):
     _banner("Fetch")
-    path, count = _fetch(cfg, force=args.force)
-    print(f"  {count:,} features -> {path}")
-    _cache.sweep(cfg.download_dir)  # archive snapshots >2 days old (shared cache only)
+    snap = _vault(cfg).pull(cfg.slug, force=args.force)
+    print(f"  {snap.features:,} features -> vault {cfg.slug} {snap.date}")
 
 
 def cmd_slim(cfg, args):
@@ -98,21 +106,6 @@ def cmd_update(cfg, args):
     cmd_publish(cfg, args)
 
 
-def cmd_cache(cfg, args):
-    _banner("Cache")
-    if args.action == "ls":
-        dates = _cache.list_archived(cfg.download_dir, args.slug)
-        if not dates:
-            print(f"  no archived snapshots for {args.slug}")
-        for d in dates:
-            print(f"  {args.slug} {d}")
-    else:  # restore
-        if not args.date:
-            raise SystemExit("restore needs a date: cache restore <slug> <YYYY-MM-DD>")
-        path = _cache.restore(cfg.download_dir, args.slug, args.date)
-        print(f"  restored -> {path}")
-
-
 COMMANDS = {
     "fetch": (cmd_fetch, "Fetch the latest address GeoJSON (arcgis or static)"),
     "slim": (cmd_slim, "Stream it into a slim GeoJSONL + meta"),
@@ -155,13 +148,6 @@ def main():
                 help="Re-fetch even if the remote is unchanged",
             )
 
-    pc = sub.add_parser("cache", help="Inspect/restore the shared download archive")
-    pc.add_argument("-c", "--config", default="layer.toml",
-                    help="Path to the city config (default: layer.toml)")
-    pc.add_argument("action", choices=["ls", "restore"], help="ls or restore")
-    pc.add_argument("slug", help="City slug (the shared cache holds many)")
-    pc.add_argument("date", nargs="?", help="YYYY-MM-DD (required for restore)")
-
     args = parser.parse_args()
     if args.command is None:
         parser.print_help()
@@ -173,9 +159,6 @@ def main():
         args.force = False
 
     cfg = _config.load(getattr(args, "config", "layer.toml"))
-    if args.command == "cache":
-        cmd_cache(cfg, args)
-        return
     COMMANDS[args.command][0](cfg, args)
 
 

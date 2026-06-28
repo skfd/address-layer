@@ -7,17 +7,13 @@ name = "address-layerist"
 version = "0.2.0"
 description = "Build OSM reference address tile layers (vector MVT + labelled raster PNG) from any municipal address-point dataset."
 requires-python = ">=3.11"
-dependencies = ["requests", "Pillow", "ijson"]
-
-[project.optional-dependencies]
-# Only needed for cities whose source is a shapefile and/or a non-WGS84 CRS.
-shapefile = ["pyshp", "pyproj"]
+dependencies = ["addressvault", "Pillow", "ijson"]
 
 [project.scripts]
 addresslayerist = "addresslayerist.cli:main"
 
 [tool.setuptools]
-packages = ["addresslayerist", "addresslayerist.fetch"]
+packages = ["addresslayerist"]
 
 [tool.setuptools.package-data]
 addresslayerist = ["assets/*.tmpl", "assets/*.css", "assets/*.js", "assets/font/*.ttf"]
