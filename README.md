@@ -17,10 +17,11 @@ can approach GitHub Pages' ~1 GB limit (Toronto alone is ~1 GB; raster is ~94%).
 
 ## Locked vs fuzzy
 
-- **Locked (this engine, deterministic):** registry/config load, fetch
-  (`arcgis` paginated REST + `static` file/shapefile/zip + reproject), slim,
-  tile math, vector (tippecanoe via WSL), raster (Pillow labeller), site
-  templating, publish (orphan gh-pages).
+- **Locked (this engine, deterministic):** registry/config load, fetch (pulls the
+  latest snapshot from `address-vault`, which owns the `arcgis`/`static`
+  acquisition + reproject and the restic archive), slim, tile math, vector
+  (tippecanoe via WSL), raster (Pillow labeller), site templating, publish
+  (orphan gh-pages).
 - **Fuzzy (a Claude Code skill):** onboarding a new city -- find the source, map
   number/street/unit/full, set licence/attribution, write `layer.toml`. See
   [`skills/onboard-city/SKILL.md`](skills/onboard-city/SKILL.md).
@@ -61,8 +62,10 @@ Individual steps: `fetch slim vector raster site publish`. Run
 
 ## Requirements
 
-- Python >= 3.11 (`requests`, `Pillow`, `ijson`; `pyshp`+`pyproj` only for the
-  `shapefile` extra).
+- Python >= 3.11. Installs `addressvault`, `Pillow`, `ijson` (see pyproject);
+  shapefile/zip sources and reprojection are handled inside `address-vault`.
+- `ADDRESSVAULT_DIR` set to the vault folder -- raw address dumps are fetched into
+  and read from `address-vault`, not stored in the city repo.
 - WSL2 + tippecanoe for the vector step -- see [wsl-setup.md](wsl-setup.md).
 
 ## Tests
