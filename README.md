@@ -41,7 +41,7 @@ oakville-address-layer/
 
 ```
 pip install -e ../address-layerist      # once
-addressvault pull <slug>             # acquire the data (separate tool; not the engine)
+addressvault pull <slug> --wait      # acquire the data (separate tool; not the engine)
 python run.py build                  # slim + vector + raster + site
 python run.py update                 # build + publish (daily entry point)
 ```
@@ -56,8 +56,9 @@ newest `<slug>-DATE.geojson` in `input_dir` (a `layer.toml` key); else the newes
 such file in `$ADDRESSVAULT_DIR`. It treats that directory as a plain folder of
 dated dumps -- it has no knowledge of `address-vault`. Whatever populates it (the
 `addressvault pull <slug>` step above, a manual download, anything) is the
-caller's concern, so the daily scheduled task is `addressvault pull <slug> &&
-python run.py update`.
+caller's concern, so the daily scheduled task is `addressvault pull <slug> --wait
+&& python run.py update` (`--wait` coalesces onto an in-flight pull instead of
+racing or erroring).
 
 ## Key locked-in rules
 

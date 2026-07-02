@@ -104,7 +104,7 @@ A city repo is thin. Alongside `layer.toml`:
 
 ```
 pip install -e ../address-layerist      # once
-addressvault pull <slug>             # acquire the data (separate tool)
+addressvault pull <slug> --wait      # acquire the data (separate tool; --wait coalesces)
 python run.py build                  # slim + vector + raster + site
 ```
 
